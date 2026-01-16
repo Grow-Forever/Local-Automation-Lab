@@ -1,0 +1,175 @@
+{
+  "name": "submissions",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "submit",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -384,
+        -64
+      ],
+      "id": "8ca28348-152f-4479-a757-e23fc20df620",
+      "name": "Webhook",
+      "webhookId": "1e5b80e9-e27a-444b-acc1-51764f38cee9"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "5167b8d4-fc33-4765-a5c0-f0dd131697ad",
+              "leftValue": "={{ $json.body.name }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "bbde9ed8-792d-4410-b4be-50f3614f94ec",
+              "leftValue": "={{ $json.body.email }}",
+              "rightValue": "@",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -176,
+        -64
+      ],
+      "id": "1bc6309a-e161-4dce-b266-060a43ec0687",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"status\": \"error\",\n  \"message\": \"Invalid input. Please provide valid name and email.\"\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        -48,
+        64
+      ],
+      "id": "9f6f282c-34c9-4341-b3ec-dba06ece5f66",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO submissions (name, email, message)\nVALUES ($1, $2, $3);\n",
+        "options": {
+          "queryReplacement": "={{ $json.body.name }},{{ $json.body.email }},{{ $json.body.message }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        32,
+        -160
+      ],
+      "id": "2b24c17c-9143-4787-9d08-fd63f4eefb6a",
+      "name": "Execute a SQL query",
+      "credentials": {
+        "postgres": {
+          "id": "Tvs5Y0g3rV9t8sbg",
+          "name": "Postgres account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"status\": \"success\",\n  \"message\": \"Data saved successfully\"\n}\n",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        304,
+        -160
+      ],
+      "id": "b0a59a41-9b4a-4671-be0a-67bb0936b84d",
+      "name": "Respond to Webhook1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "d097ccd1-7405-4fdd-8c98-e1521042fae9",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "a93557b1374144b1e2eec6791ca125c7e60fe74a7532a55022124c1b91cd2aec"
+  },
+  "id": "uTLTyEzXUBciVsapkCHED",
+  "tags": []
+}
